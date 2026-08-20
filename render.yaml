@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: viral-research-tool
+    runtime: docker
+    plan: free
+    region: singapore          # gần Việt Nam nhất
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true

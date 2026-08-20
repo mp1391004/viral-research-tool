@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viral Research Tool</title>
+<style>
+:root{
+  --bg:#0b0d12; --panel:#141821; --panel2:#1b2029; --line:#262c38;
+  --txt:#e6e9ef; --dim:#8a93a6; --acc:#5b8cff; --ok:#3ecf8e; --warn:#ffb454; --err:#ff6b6b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}
+.wrap{max-width:1400px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+h1{font-size:20px;margin:0;letter-spacing:-.2px}
+h1 span{color:var(--dim);font-weight:400;font-size:13px;margin-left:8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin:0 0 14px}
+label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  color:var(--txt);padding:9px 11px;font:13px/1.5 inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}
+textarea{resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:600 13px inherit;cursor:pointer}
+button:hover{filter:brightness(1.1)} button:disabled{opacity:.45;cursor:not-allowed}
+button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-weight:500}
+button.sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--txt)}
+td{padding:9px 10px;border-bottom:1px solid #1e2430;vertical-align:top}
+tr:hover td{background:#171c26}
+.cap{max-width:340px;color:var(--dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;background:var(--panel2);border:1px solid var(--line)}
+.tag.tiktok{color:#ff4d6d}.tag.youtube{color:#ff5252}.tag.facebook{color:#5b8cff}.tag.instagram{color:#e56ba8}
+.vs{font-weight:700}.vs.hot{color:var(--ok)}.vs.mid{color:var(--warn)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.muted{color:var(--dim);font-size:12px}
+.err{color:var(--err)}.ok{color:var(--ok)}
+.scroll{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:10px}
+#drawer{position:fixed;top:0;right:0;width:min(720px,94vw);height:100%;background:var(--panel);
+  border-left:1px solid var(--line);transform:translateX(100%);transition:.22s;z-index:50;
+  display:flex;flex-direction:column}
+#drawer.open{transform:none}
+#drawer .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+#drawer .bd{padding:18px;overflow:auto;flex:1}
+.md{font-size:13.5px;line-height:1.7}.md h1,.md h2,.md h3{font-size:15px;margin:18px 0 8px}
+.md pre{background:var(--panel2);padding:10px;border-radius:8px;overflow:auto}
+.md code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+.md table{margin:10px 0}.md td,.md th{border:1px solid var(--line)}
+.box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;white-space:pre-wrap;
+  font-size:12.5px;max-height:280px;overflow:auto;color:#c9d1de}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--dim);border-top-color:transparent;
+  border-radius:50%;animation:s .7s linear infinite;vertical-align:-1px}
+@keyframes s{to{transform:rotate(360deg)}}
+details summary{cursor:pointer;color:var(--dim);font-size:12px;padding:4px 0}
+.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+.chk input{width:auto}
+.hint{font-size:11.5px;color:#6f7889;margin-top:5px;line-height:1.5}
+.hint b{color:var(--dim)} .hint code{background:var(--panel2);padding:0 4px;border-radius:3px}
+a.get{float:right;font-size:11.5px;font-weight:600;text-decoration:none;background:rgba(91,140,255,.12);
+  border:1px solid rgba(91,140,255,.3);padding:1px 8px;border-radius:5px}
+a.get:hover{background:rgba(91,140,255,.25)}
+.req{color:var(--warn);font-size:10.5px;border:1px solid rgba(255,180,84,.35);padding:0 5px;border-radius:4px;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Viral Research Tool <span>Apify → bóc caption/kịch bản → phân tích AI</span></h1>
+  <div class="row">
+    <span id="saveState" class="muted"></span>
+    <button class="ghost sm" onclick="toggle('cfg')">⚙︎ Cấu hình API</button>
+  </div>
+</header>
+
+<!-- CẤU HÌNH -->
+<div class="panel" id="cfg" style="display:none">
+  <h2>Cấu hình API — lưu trong trình duyệt của bạn, không gửi đi đâu khác</h2>
+  <div class="grid g2">
+    <div>
+      <label>Apify API token <span class="req">bắt buộc</span>
+        <a class="get" href="https://console.apify.com/settings/integrations" target="_blank" rel="noopener">Lấy token ↗</a></label>
+      <input id="apifyToken" type="password" placeholder="apify_api_...">
+      <div class="hint">Đăng ký free → vào link trên → copy <b>Personal API token</b>. Tài khoản free có sẵn $5 credit/tháng (~5.000–15.000 bài).</div>
+    </div>
+    <div>
+      <label>Dịch vụ transcript video</label>
+      <select id="ttProvider" onchange="updProviderHint()">
+        <option value="groq">Groq — Whisper v3 Turbo (rẻ nhất, ~$0.04/giờ, tiếng Việt tốt)</option>
+        <option value="gemini">Google Gemini Flash (rẻ, hiểu ngữ cảnh)</option>
+        <option value="openai">OpenAI Whisper (~$0.36/giờ)</option>
+      </select>
+      <div class="hint" id="provHint"></div>
+    </div>
+    <div>
+      <label>API key cho dịch vụ transcript
+        <a class="get" id="ttLink" href="#" target="_blank" rel="noopener">Lấy key ↗</a></label>
+      <input id="ttKey" type="password" placeholder="gsk_... / AIza... / sk-...">
+      <div class="hint">Bỏ trống cũng được nếu chỉ research YouTube — phụ đề YouTube lấy miễn phí, không cần key.</div>
+    </div>
+    <div></div>
+    <div>
+      <label>Kyma API key <span class="req">bắt buộc</span>
+        <a class="get" href="https://kymaapi.com/keys" target="_blank" rel="noopener">Lấy key ↗</a></label>
+      <input id="kymaKey" type="password" placeholder="sk-..." onchange="autoModels()">
+      <div class="hint">Dán key vào là xong — endpoint đã cấu hình sẵn <code>https://kymaapi.com/v1</code>.</div>
+    </div>
+    <div>
+      <label>Model phân tích <a class="get" href="#" onclick="loadModels();return false">Tải danh sách ↗</a></label>
+      <div class="row">
+        <input id="kymaModel" list="modelList" placeholder="deepseek-v4-flash" style="flex:1">
+        <datalist id="modelList"></datalist>
+      </div>
+      <div class="hint" id="modelHint">Rẻ &amp; đủ mạnh: <b>DeepSeek V4 Flash</b>. Cần phân tích sâu hơn thì dùng V4 Pro. Dán key xong bấm “Tải danh sách” để chọn đúng tên model.</div>
+    </div>
+    <div style="grid-column:1/-1">
+      <label>Cookie YouTube <span class="muted">— chỉ cần khi chạy trên server bị YouTube chặn bot</span>
+        <a class="get" href="https://chromewebstore.google.com/search/get%20cookies%20txt%20locally" target="_blank" rel="noopener">Tiện ích xuất cookie ↗</a></label>
+      <textarea id="ytCookies" rows="3" placeholder="# Netscape HTTP Cookie File&#10;.youtube.com	TRUE	/	TRUE	...	SID	..."></textarea>
+      <div class="hint">Cài tiện ích <b>Get cookies.txt LOCALLY</b> cho Chrome → mở youtube.com (đã đăng nhập) →
+        bấm tiện ích → Export → mở file .txt → copy toàn bộ dán vào đây. Chạy ở máy thì bỏ trống.
+        Cookie chỉ nằm trong trình duyệt của bạn và gửi tới server của chính bạn.</div>
+    </div>
+    <div style="grid-column:1/-1">
+      <details>
+        <summary>Nâng cao — đổi endpoint (chỉ khi Kyma báo dùng URL khác)</summary>
+        <input id="kymaBase" style="margin-top:8px" placeholder="https://kymaapi.com/v1">
+      </details>
+    </div>
+    <div style="grid-column:1/-1"><button onclick="saveCfg()">Lưu cấu hình</button></div>
+  </div>
+</div>
+
+<!-- BƯỚC 1 -->
+<div class="panel">
+  <h2>Bước 1 · Điền link kênh cần research</h2>
+  <label>Mỗi dòng 1 link kênh — TikTok / YouTube / Facebook Page / Instagram</label>
+  <textarea id="urls" rows="5" placeholder="https://www.tiktok.com/@tenkenh
+https://www.youtube.com/@tenkenh
+https://www.facebook.com/tenpage
+https://www.instagram.com/tenkenh/"></textarea>
+  <div class="row" style="margin-top:12px">
+    <div style="width:150px"><label>Số bài / kênh</label><input id="limit" type="number" value="30" min="5" max="200"></div>
+    <div style="width:190px"><label>Loại nội dung</label>
+      <select id="content">
+        <option value="all">Tất cả</option>
+        <option value="long">Chỉ video dài (&gt;3 phút)</option>
+        <option value="short">Chỉ video ngắn / Shorts / Reels</option>
+      </select></div>
+    <div style="width:180px"><label>Chỉ lấy bài trong</label>
+      <select id="days"><option value="">Tất cả</option><option value="30">30 ngày</option>
+      <option value="90">90 ngày</option><option value="180">6 tháng</option><option value="365">1 năm</option></select></div>
+    <div style="align-self:flex-end"><button id="btnScrape" onclick="doScrape()">Quét bài viral</button></div>
+    <span id="scrapeMsg" class="muted"></span>
+  </div>
+</div>
+
+<!-- BƯỚC 2 -->
+<div class="panel" id="resPanel" style="display:none">
+  <h2>Bước 2 · Danh sách bài <span id="cnt" class="muted"></span></h2>
+  <div class="row" style="margin-bottom:12px">
+    <input id="filter" placeholder="Lọc theo caption / tác giả…" style="max-width:280px" oninput="render()">
+    <select id="fPlatform" onchange="render()" style="max-width:150px"><option value="">Mọi nền tảng</option></select>
+    <button class="ghost sm" onclick="exportCsv()">⭳ Xuất CSV</button>
+    <button class="ghost sm" onclick="bulkExtract()">⚡︎ Bóc nội dung các bài đã chọn</button>
+    <button class="ghost sm" onclick="bulkAnalyze()">🧠 Phân tích các bài đã chọn</button>
+    <span id="bulkMsg" class="muted"></span>
+  </div>
+  <div class="scroll"><table id="tbl">
+    <thead><tr>
+      <th style="width:28px"><input type="checkbox" onclick="selAll(this)"></th>
+      <th onclick="sortBy('platform')">Kênh</th>
+      <th onclick="sortBy('caption')">Nội dung</th>
+      <th class="num" onclick="sortBy('views')">Views</th>
+      <th class="num" onclick="sortBy('likes')">Like</th>
+      <th class="num" onclick="sortBy('comments')">Cmt</th>
+      <th class="num" onclick="sortBy('shares')">Share</th>
+      <th class="num" onclick="sortBy('engagement')">Tương tác</th>
+      <th class="num" onclick="sortBy('er')">ER%</th>
+      <th class="num" onclick="sortBy('viral_score')">Viral</th>
+      <th class="num" onclick="sortBy('duration')">Dài</th>
+      <th onclick="sortBy('date')">Ngày</th>
+      <th>Link</th><th>Nội dung bóc</th>
+    </tr></thead><tbody id="tb"></tbody>
+  </table></div>
+  <div id="errs" class="muted" style="margin-top:10px"></div>
+</div>
+
+<!-- BƯỚC 3 -->
+<div class="panel">
+  <h2>Bước 3 · Khung phân tích của bạn</h2>
+  <label>Prompt khung — AI sẽ phân tích từng bài đúng theo khung này</label>
+  <textarea id="framework" rows="12"></textarea>
+  <div class="row" style="margin-top:10px">
+    <button class="ghost sm" onclick="saveCfg()">Lưu khung</button>
+    <button class="ghost sm" onclick="resetFw()">Khôi phục khung mặc định</button>
+  </div>
+</div>
+</div>
+
+<div id="drawer">
+  <div class="hd">
+    <div><div id="dTitle" style="font-weight:600"></div><div id="dMeta" class="muted"></div></div>
+    <button class="ghost sm" onclick="closeDrawer()">Đóng</button>
+  </div>
+  <div class="bd" id="dBody"></div>
+</div>
+
+<script>
+const DEFAULT_FW = `Phân tích bài content này theo khung sau:
+
+1. HOOK (3 giây đầu)
+   - Câu/hình ảnh mở đầu là gì? Trích nguyên văn.
+   - Cơ chế gây chú ý: tò mò / xung đột / lợi ích / phản trực giác / cảm xúc?
+   - Vì sao hook này giữ được người xem?
+
+2. INSIGHT & ĐỐI TƯỢNG
+   - Nói với ai? Nỗi đau/khao khát nào được chạm?
+   - Insight ngầm khiến người xem thấy "đúng là mình"?
+
+3. CẤU TRÚC NỘI DUNG
+   - Chia bài thành các beat theo trình tự, mỗi beat 1 dòng.
+   - Điểm giữ chân (retention hook) đặt ở đâu?
+
+4. YẾU TỐ VIRAL
+   - Vì sao bài này share được? (giá trị thực dụng / bản sắc / cảm xúc / gây tranh luận)
+   - Có yếu tố nào dễ bị bắt chước / làm lại không?
+
+5. CTA & CHUYỂN ĐỔI
+   - CTA là gì, đặt ở đâu, mạnh hay yếu?
+
+6. RÚT RA CHO MÌNH
+   - 3 điều áp dụng được ngay.
+   - 1 ý tưởng bài mới lấy cảm hứng từ bài này (kèm hook gợi ý).`;
+
+const $ = id => document.getElementById(id);
+let ROWS = [], SORT = {k:'views', d:-1};
+
+// ---------- config ----------
+const CFG_KEYS = ['apifyToken','ttProvider','ttKey','kymaBase','kymaKey','kymaModel','framework','content','days','limit','ytCookies'];
+function loadCfg(){
+  CFG_KEYS.forEach(k=>{ const v = localStorage.getItem('vrt_'+k); if(v!==null && $(k)) $(k).value = v; });
+  if(!$('framework').value) $('framework').value = DEFAULT_FW;
+  if(!$('apifyToken').value) toggle('cfg', true);
+  updProviderHint();
+}
+function saveCfg(){
+  CFG_KEYS.forEach(k=>{ if($(k)) localStorage.setItem('vrt_'+k, $(k).value); });
+  $('saveState').textContent = '✓ đã lưu'; setTimeout(()=>$('saveState').textContent='',2000);
+}
+function resetFw(){ $('framework').value = DEFAULT_FW; saveCfg(); }
+
+const PROVIDERS = {
+  groq:   {url:'https://console.groq.com/keys',
+           hint:'Đăng nhập bằng Google → New API Key → copy. <b>Có free tier</b>, vượt hạn mức mới tính tiền (~$0.04/giờ audio).'},
+  gemini: {url:'https://aistudio.google.com/apikey',
+           hint:'Đăng nhập Google → Create API key → copy. Free tier khá rộng, đủ dùng cho research hằng ngày.'},
+  openai: {url:'https://platform.openai.com/api-keys',
+           hint:'Create new secret key → copy ngay (chỉ hiện 1 lần). Cần nạp tiền trước, ~$0.36/giờ audio.'},
+};
+function updProviderHint(){
+  const p = PROVIDERS[$('ttProvider').value];
+  $('ttLink').href = p.url; $('provHint').innerHTML = p.hint;
+}
+function toggle(id, force){ const e=$(id); e.style.display = force!==undefined ? (force?'block':'none') : (e.style.display==='none'?'block':'none'); }
+
+const KYMA_DEFAULT = 'https://kymaapi.com/v1';
+function kymaBase(){ return ($('kymaBase').value || '').trim() || KYMA_DEFAULT; }
+
+async function loadModels(silent){
+  if(!$('kymaKey').value){ if(!silent) alert('Dán Kyma API key trước đã.'); return; }
+  const q = new URLSearchParams({base_url:kymaBase(), api_key:$('kymaKey').value});
+  $('modelHint').innerHTML = '<span class="spin"></span> Đang kết nối Kyma…';
+  try{
+    const r = await fetch('/api/models?'+q); const d = await r.json();
+    if(!r.ok) throw new Error(d.detail);
+    const ms = d.models||[];
+    $('modelList').innerHTML = ms.map(m=>`<option value="${m}">`).join('');
+    if(!$('kymaModel').value){
+      const pick = ms.find(m=>/deepseek.*(v4).*(flash)/i.test(m)) || ms.find(m=>/deepseek/i.test(m)) || ms[0];
+      if(pick) $('kymaModel').value = pick;
+    }
+    $('modelHint').innerHTML = `<span class="ok">✓ Kết nối OK — ${ms.length} model.</span> Bấm vào ô trên để chọn (gõ “deep” để lọc DeepSeek).`;
+    saveCfg();
+  }catch(e){ $('modelHint').innerHTML = '<span class="err">✗ '+esc(e.message)+'</span>'; }
+}
+function autoModels(){ if($('kymaKey').value) loadModels(true); }
+
+// ---------- scrape ----------
+async function doScrape(){
+  const urls = $('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!urls.length) return alert('Điền ít nhất 1 link kênh.');
+  if(!$('apifyToken').value){ toggle('cfg',true); return alert('Cần điền Apify token ở phần Cấu hình API.'); }
+  saveCfg();
+  $('btnScrape').disabled = true;
+  $('scrapeMsg').innerHTML = '<span class="spin"></span> Đang quét… có thể mất 1–5 phút tuỳ số kênh.';
+  try{
+    const r = await fetch('/api/scrape',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({urls, limit:+$('limit').value, days: $('days').value? +$('days').value : null, content: $('content').value,
+        apify_token: $('apifyToken').value})});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.detail || 'lỗi không rõ');
+    ROWS = d.rows.map((x,i)=>({...x, _i:i, _sel:false, _text:'', _analysis:'', _st:''}));
+    $('errs').innerHTML = (d.errors||[]).map(e=>`<div class="err">⚠ ${esc(e)}</div>`).join('')
+      + (d.notes||[]).map(e=>`<div>ℹ ${esc(e)}</div>`).join('');
+    const ps = [...new Set(ROWS.map(r=>r.platform))];
+    $('fPlatform').innerHTML = '<option value="">Mọi nền tảng</option>'+ps.map(p=>`<option>${p}</option>`).join('');
+    $('resPanel').style.display='block';
+    $('scrapeMsg').innerHTML = `<span class="ok">✓ ${d.count} bài</span>`;
+    render();
+  }catch(e){ $('scrapeMsg').innerHTML = '<span class="err">✗ '+esc(e.message)+'</span>'; }
+  $('btnScrape').disabled = false;
+}
+
+// ---------- render ----------
+function visible(){
+  const q = $('filter').value.toLowerCase(), p = $('fPlatform').value;
+  return ROWS.filter(r => (!p||r.platform===p) && (!q || (r.caption+r.author).toLowerCase().includes(q)));
+}
+function sortBy(k){ SORT = {k, d: SORT.k===k ? -SORT.d : -1}; render(); }
+function render(){
+  const rows = visible().sort((a,b)=>{
+    const x=a[SORT.k], y=b[SORT.k];
+    return (typeof x==='number'? x-y : String(x).localeCompare(String(y))) * SORT.d;
+  });
+  $('cnt').textContent = `· ${rows.length} bài`;
+  $('tb').innerHTML = rows.map(r=>`<tr>
+    <td><input type="checkbox" ${r._sel?'checked':''} onchange="ROWS[${r._i}]._sel=this.checked"></td>
+    <td><span class="tag ${r.platform.toLowerCase()}">${r.platform}</span><div class="muted" style="margin-top:4px">${esc(r.author)}</div></td>
+    <td><div class="cap">${esc(r.caption)||'<i>(không có caption)</i>'}</div></td>
+    <td class="num">${n(r.views)}</td><td class="num">${n(r.likes)}</td><td class="num">${n(r.comments)}</td>
+    <td class="num">${n(r.shares)}</td><td class="num">${n(r.engagement)}</td><td class="num">${r.er||''}</td>
+    <td class="num vs ${r.viral_score>=2?'hot':r.viral_score>=1.2?'mid':''}">${r.viral_score? r.viral_score+'×':''}</td>
+    <td class="num muted">${r.duration_text||''}</td>
+    <td class="muted">${(r.date||'').slice(0,10)}</td>
+    <td><a href="${r.post_url}" target="_blank" rel="noopener">mở ↗</a></td>
+    <td style="white-space:nowrap">
+      ${r._text ? `<button class="ghost sm" onclick="showText(${r._i})">Xem</button>
+                   <button class="sm" onclick="doAnalyze(${r._i})">${r._analysis?'Xem PT':'Phân tích'}</button>`
+                : `<button class="ghost sm" onclick="doExtract(${r._i})">${r._st||'Bóc'}</button>`}
+    </td></tr>`).join('');
+}
+function selAll(c){ visible().forEach(r=>ROWS[r._i]._sel=c.checked); render(); }
+const n = v => v ? v.toLocaleString('vi-VN') : '';
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- extract ----------
+async function doExtract(i){
+  const r = ROWS[i];
+  if(r._text) return showText(i);
+  r._st = '⏳'; render();
+  try{
+    const res = await fetch('/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({post_url:r.post_url, platform:r.platform, media_type:r.media_type,
+        caption:r.caption, provider:$('ttProvider').value, api_key:$('ttKey').value,
+        cookies:$('ytCookies').value})});
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.detail);
+    r._text = d.text; r._src = d.source; r._st='';
+    render(); showText(i);
+  }catch(e){ r._st=''; render(); alert('Bóc thất bại: '+e.message); }
+}
+async function bulkExtract(){
+  const sel = ROWS.filter(r=>r._sel && !r._text);
+  if(!sel.length) return alert('Chọn ít nhất 1 bài chưa bóc.');
+  for(let k=0;k<sel.length;k++){ $('bulkMsg').innerHTML=`<span class="spin"></span> Bóc ${k+1}/${sel.length}…`; await doExtractQuiet(sel[k]); }
+  $('bulkMsg').innerHTML='<span class="ok">✓ xong</span>'; render();
+}
+async function doExtractQuiet(r){
+  try{
+    const res = await fetch('/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({post_url:r.post_url, platform:r.platform, media_type:r.media_type,
+        caption:r.caption, provider:$('ttProvider').value, api_key:$('ttKey').value,
+        cookies:$('ytCookies').value})});
+    const d = await res.json(); if(res.ok){ r._text=d.text; r._src=d.source; }
+    else r._err = d.detail;
+  }catch(e){ r._err = e.message; }
+}
+
+// ---------- analyze ----------
+async function doAnalyze(i){
+  const r = ROWS[i];
+  if(r._analysis) return showAnalysis(i);
+  if(!$('kymaKey').value){ toggle('cfg',true); return alert('Cần dán Kyma API key ở phần Cấu hình API.'); }
+  openDrawer('Đang phân tích…', r.post_url, '<span class="spin"></span> Model đang đọc bài…');
+  try{
+    const res = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text:r._text, framework:$('framework').value, base_url:kymaBase(),
+        api_key:$('kymaKey').value, model:$('kymaModel').value||'deepseek-chat',
+        meta:{'Nền tảng':r.platform,'Tác giả':r.author,'Thời lượng':r.duration_text,'Views':r.views,'Like':r.likes,'Comment':r.comments,
+              'Share':r.shares,'ER %':r.er,'Viral score':r.viral_score,'Ngày':r.date}})});
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.detail);
+    r._analysis = d.analysis; render(); showAnalysis(i);
+  }catch(e){ $('dBody').innerHTML = '<span class="err">✗ '+esc(e.message)+'</span>'; }
+}
+async function bulkAnalyze(){
+  const sel = ROWS.filter(r=>r._sel && r._text && !r._analysis);
+  if(!sel.length) return alert('Chọn các bài đã bóc nội dung nhưng chưa phân tích.');
+  for(let k=0;k<sel.length;k++){
+    $('bulkMsg').innerHTML=`<span class="spin"></span> Phân tích ${k+1}/${sel.length}…`;
+    const r=sel[k];
+    try{
+      const res = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({text:r._text, framework:$('framework').value, base_url:kymaBase(),
+          api_key:$('kymaKey').value, model:$('kymaModel').value||'deepseek-chat',
+          meta:{'Nền tảng':r.platform,'Tác giả':r.author,'Views':r.views,'Like':r.likes,'ER %':r.er}})});
+      const d = await res.json(); if(res.ok) r._analysis = d.analysis;
+    }catch(e){}
+  }
+  $('bulkMsg').innerHTML='<span class="ok">✓ xong</span>'; render();
+}
+
+// ---------- drawer ----------
+function openDrawer(t,m,b){ $('dTitle').textContent=t; $('dMeta').innerHTML=m; $('dBody').innerHTML=b; $('drawer').classList.add('open'); }
+function closeDrawer(){ $('drawer').classList.remove('open'); }
+function showText(i){
+  const r=ROWS[i];
+  openDrawer('Nội dung bóc được', `${esc(r.author)} · nguồn: ${esc(r._src||'')} · <a href="${r.post_url}" target="_blank">mở bài ↗</a>`,
+    `<div class="box">${esc(r._text)}</div>
+     <div class="row" style="margin-top:12px">
+       <button onclick="doAnalyze(${i})">🧠 Phân tích theo khung</button>
+       <button class="ghost" onclick="navigator.clipboard.writeText(ROWS[${i}]._text)">Copy</button>
+     </div>`);
+}
+function showAnalysis(i){
+  const r=ROWS[i];
+  openDrawer('Phân tích theo khung', `${esc(r.author)} · ${n(r.views)} views · viral ${r.viral_score}× · <a href="${r.post_url}" target="_blank">mở bài ↗</a>`,
+    `<div class="md">${md(r._analysis)}</div>
+     <details style="margin-top:16px"><summary>Xem nội dung gốc đã bóc</summary><div class="box" style="margin-top:8px">${esc(r._text)}</div></details>
+     <div class="row" style="margin-top:12px"><button class="ghost" onclick="navigator.clipboard.writeText(ROWS[${i}]._analysis)">Copy phân tích</button></div>`);
+}
+function md(s){
+  return esc(s)
+    .replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^[-*] (.*)$/gm,'• $1').replace(/\n/g,'<br>');
+}
+
+// ---------- export ----------
+function exportCsv(){
+  const cols=['platform','author','caption','post_url','date','duration_text','views','likes','comments','shares','engagement','er','viral_score'];
+  const head=['Nền tảng','Tác giả','Caption','Link','Ngày','Thời lượng','Views','Like','Comment','Share','Tương tác','ER %','Viral score','Nội dung bóc','Phân tích'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv=[head.map(q).join(',')].concat(visible().map(r=>cols.map(c=>q(r[c])).concat([q(r._text),q(r._analysis)]).join(','))).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='viral-research-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+
+loadCfg();
+</script>
+</body>
+</html>

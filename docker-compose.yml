@@ -1,0 +1,8 @@
+services:
+  viral-research:
+    build: .
+    container_name: viral-research
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    # Khi lên VPS có domain, đặt Caddy/Nginx reverse proxy trỏ vào cổng 8000.
